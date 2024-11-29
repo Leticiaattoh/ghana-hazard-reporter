@@ -1,68 +1,156 @@
-import { FormEvent, useState } from "react";
+import Swal from "sweetalert2";
+import { apiNewHazardReporter } from "../services/auth";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function HazardForm({ onAddHazard }: { onAddHazard: any }) {
-  const [title, setTitle] = useState("");
-  const [images, setImages] = useState([]);
-  const [location, setLocation] = useState("");
-  const [hazardType, setHazardType] = useState("environmental");
+type HazardFormProps = {
+  onSuccess: () => void;
+};
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    const newHazard = { title, images, location, hazardType };
-    onAddHazard(newHazard);
-    setTitle("");
-    setImages([]);
-    setLocation("");
-    setHazardType("environmental");
+import React from "react";
+
+export default function HazardForm(props: HazardFormProps) {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    try {
+      const form = event.target as HTMLFormElement;
+      const formData = new FormData(form);
+
+      await apiNewHazardReporter(formData);
+
+      props.onSuccess();
+
+      Swal.fire({
+        icon: "success",
+        title: "Hazard Reported Successfully",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Failed to Report Hazard",
+        text: "Something went wrong!",
+      });
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Report a Hazard</h2>
+    <div className="flex flex-col w-full max-w-xl">
+      <div className="w-full p-8 space-y-6">
+        <form onSubmit={handleSubmit}>
+          <label
+            className="block text-sm font-medium text-gray-700"
+            htmlFor="title"
+          >
+            Title
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            className="mt-1 block w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            required
+          />
 
-      <label className="block mb-2">Title</label>
-      <input
-        type="text"
-        className="border border-gray-300 p-2 w-full mb-4"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
+          <label
+            className="block text-sm font-medium text-gray-700"
+            htmlFor="images"
+          >
+            Images
+          </label>
+          <input
+            type="file"
+            id="images"
+            name="images"
+            className="mt-1 block w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            required
+            multiple
+            accept="image/*"
+          />
 
-      <label className="block mb-2">Images</label>
-      <input
-        type="file"
-        multiple
-        className="border border-gray-300 p-2 w-full mb-4"
-      />
+          <input
+            type="text"
+            id="country"
+            name="country"
+            value="Ghana"
+            className="hidden mt-1 w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            required
+          />
 
-      <label className="block mb-2">Location</label>
-      <input
-        type="text"
-        className="border border-gray-300 p-2 w-full mb-4"
-        value={location}
-        onChange={(e) => setLocation(e.target.value)}
-      />
+          <label
+            className="block text-sm font-medium text-gray-700"
+            htmlFor="city"
+          >
+            City
+          </label>
+          <input
+            type="text"
+            id="city"
+            name="city"
+            className="mt-1 block w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            required
+          />
 
-      <label className="block mb-2">Hazard Type</label>
-      <select
-        className="border border-gray-300 p-2 w-full mb-4"
-        value={hazardType}
-        onChange={(e) => setHazardType(e.target.value)}
-      >
-        <option value="environmental">Environmental</option>
-        <option value="noise">Noise</option>
-        <option value="accident">Accident</option>
-        <option value="flood">Flood</option>
-        {/* Add more options as needed */}
-      </select>
+          <input
+            type="number"
+            step="any"
+            id="longitude"
+            name="longitude"
+            value="0.1734"
+            className="hidden mt-1 w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            required
+          />
 
-      <button
-        type="submit"
-        className="bg-blue-500 text-white p-2 rounded w-full hover:bg-blue-600"
-      >
-        Submit Hazard
-      </button>
-    </form>
+          <input
+            type="number"
+            step="any"
+            id="latitude"
+            name="latitude"
+            value="5.6221"
+            className="hidden mt-1 w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            required
+          />
+
+          <label
+            className="block text-sm font-medium text-gray-700"
+            htmlFor="hazardtype"
+          >
+            Hazard Type
+          </label>
+          <select
+            id="hazardtype"
+            name="hazardtype"
+            className="mt-1 block w-full px-3 py-2 mb-4 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          >
+            <option value="environmental">Environmental</option>
+            <option value="noise">Noise</option>
+            <option value="accident">Accident</option>
+            <option value="flood">Flood</option>
+          </select>
+
+          <label
+            className="block text-sm font-medium text-gray-700"
+            htmlFor="description"
+          >
+            Description
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            placeholder="Describe the hazard here"
+            className="mt-1 block w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            rows={4}
+            required
+          ></textarea>
+
+          <button
+            type="submit"
+            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-black bg-[#E6FCF9] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Submit Hazard
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }
